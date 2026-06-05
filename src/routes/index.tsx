@@ -19,7 +19,7 @@ export const Route = createFileRoute("/")({
   component: Farewell,
 });
 
-type Stage = "locked" | "welcome" | "loading" | "message" | "final";
+type Stage = "locked" | "welcome" | "loading" | "message";
 
 function Farewell() {
   const unlockAt = useMemo(() => getUnlockTime(), []);
