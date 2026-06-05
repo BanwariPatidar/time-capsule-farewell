@@ -73,11 +73,11 @@ function fallback(input: string): PersonalMessage {
   };
 }
 
-/** Unlock at 7:00 PM local time today. */
+/** Unlock at 6:00 PM local time today. */
 export function getUnlockTime(): Date {
   const stored = typeof window !== "undefined" ? localStorage.getItem("unlock_override") : null;
   if (stored) return new Date(stored);
   const d = new Date();
-  d.setHours(19, 0, 0, 0);
+  d.setHours(18, 0, 0, 0);
   return d;
 }

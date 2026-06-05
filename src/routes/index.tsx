@@ -11,7 +11,7 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "A Farewell, At The Right Time" },
-      { name: "description", content: "A small digital time capsule — open it at 7:00 PM." },
+      { name: "description", content: "A small digital time capsule — open it at 6:00 PM." },
       { property: "og:title", content: "A Farewell, At The Right Time" },
       { property: "og:description", content: "Some memories are meant to be opened at the right time." },
     ],
@@ -97,8 +97,16 @@ function ScreenShell({ children }: { children: React.ReactNode }) {
   );
 }
 
+function fmtTime(d: Date) {
+  let h = d.getHours();
+  const m = d.getMinutes().toString().padStart(2, "0");
+  const ampm = h >= 12 ? "PM" : "AM";
+  h = h % 12 || 12;
+  return `${h}:${m} ${ampm}`;
+}
+
 function LockScreen({ target }: { target: Date }) {
-  const unlockLabel = target.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+  const unlockLabel = fmtTime(target);
   return (
     <ScreenShell>
       <div className="max-w-3xl w-full text-center">
