@@ -264,14 +264,6 @@ function MessageScreen({ msg }: { msg: PersonalMessage }) {
               <Block label="My wish for you">{msg.wish}</Block>
             )}
 
-            <div className="pt-4 flex justify-end">
-              <button
-                onClick={onContinue}
-                className="btn-gold rounded-xl px-5 py-3 text-sm font-medium hover:scale-[1.02] active:scale-[0.98]"
-              >
-                Continue →
-              </button>
-            </div>
           </motion.div>
         </motion.div>
       </div>
