@@ -229,7 +229,7 @@ function LoadingScreen() {
   );
 }
 
-function MessageScreen({ msg, onContinue }: { msg: PersonalMessage; onContinue: () => void }) {
+function MessageScreen({ msg }: { msg: PersonalMessage }) {
   return (
     <ScreenShell>
       <div className="max-w-2xl w-full">
