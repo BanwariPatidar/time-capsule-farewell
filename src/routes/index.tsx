@@ -19,7 +19,7 @@ export const Route = createFileRoute("/")({
   component: Farewell,
 });
 
-type Stage = "locked" | "welcome" | "loading" | "message" | "final";
+type Stage = "locked" | "welcome" | "loading" | "message";
 
 function Farewell() {
   const unlockAt = useMemo(() => getUnlockTime(), []);
@@ -61,10 +61,7 @@ function Farewell() {
             <WelcomeScreen key="welcome" name={name} setName={setName} onSubmit={submit} />
           )}
           {stage === "loading" && <LoadingScreen key="loading" />}
-          {stage === "message" && msg && (
-            <MessageScreen key="message" msg={msg} onContinue={() => setStage("final")} />
-          )}
-          {stage === "final" && <FinalScreen key="final" />}
+          {stage === "message" && msg && <MessageScreen key="message" msg={msg} />}
         </AnimatePresence>
       </main>
     </div>
@@ -232,7 +229,7 @@ function LoadingScreen() {
   );
 }
 
-function MessageScreen({ msg, onContinue }: { msg: PersonalMessage; onContinue: () => void }) {
+function MessageScreen({ msg }: { msg: PersonalMessage }) {
   return (
     <ScreenShell>
       <div className="max-w-2xl w-full">
@@ -267,14 +264,6 @@ function MessageScreen({ msg, onContinue }: { msg: PersonalMessage; onContinue: 
               <Block label="My wish for you">{msg.wish}</Block>
             )}
 
-            <div className="pt-4 flex justify-end">
-              <button
-                onClick={onContinue}
-                className="btn-gold rounded-xl px-5 py-3 text-sm font-medium hover:scale-[1.02] active:scale-[0.98]"
-              >
-                Continue →
-              </button>
-            </div>
           </motion.div>
         </motion.div>
       </div>
@@ -296,123 +285,3 @@ function Block({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-function FinalScreen() {
-  const timeline = [
-    { year: "Day 1", title: "First commit, shaking hands", body: "Walked in unsure, walked out belonging." },
-    { year: "Year 1", title: "First feature shipped", body: "Learned that 'done' is a team sport." },
-    { year: "Year 2", title: "Late nights, real friendships", body: "Found my people between Slack threads." },
-    { year: "Today", title: "A new chapter", body: "Grateful, lighter, and braver than I arrived." },
-  ];
-
-  return (
-    <motion.section
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.8 }}
-      className="px-6 py-24"
-    >
-      <div className="max-w-4xl mx-auto">
-        <motion.h2
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
-          className="font-display text-4xl sm:text-6xl text-gradient-gold text-center leading-tight"
-        >
-          Thank You For Being Part Of<br />My First Professional Journey
-        </motion.h2>
-
-        <p className="mt-6 text-center text-muted-foreground max-w-2xl mx-auto">
-          Every name above this section is a chapter. This is the dedication page.
-        </p>
-
-        {/* Team photo placeholder */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.96 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.9 }}
-          className="mt-16 glass-strong rounded-3xl aspect-[16/9] flex items-center justify-center overflow-hidden relative"
-        >
-          <div className="absolute inset-0 opacity-30"
-               style={{ background: "var(--gradient-aurora)" }} />
-          <div className="relative text-center">
-            <div className="font-display text-7xl text-gold/40">✦</div>
-            <p className="mt-4 text-sm uppercase tracking-[0.3em] text-muted-foreground">
-              The team — held here in pixels and in memory
-            </p>
-          </div>
-        </motion.div>
-
-        {/* Timeline */}
-        <div className="mt-24">
-          <h3 className="font-display text-3xl text-center text-gradient-gold mb-12">The Journey</h3>
-          <div className="relative">
-            <div className="absolute left-4 sm:left-1/2 top-0 bottom-0 w-px bg-gold/20 -translate-x-1/2" />
-            <div className="space-y-10">
-              {timeline.map((t, i) => (
-                <motion.div
-                  key={t.year}
-                  initial={{ opacity: 0, x: i % 2 ? 30 : -30 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true, margin: "-80px" }}
-                  transition={{ duration: 0.7 }}
-                  className={`relative pl-12 sm:pl-0 sm:grid sm:grid-cols-2 sm:gap-12 ${
-                    i % 2 ? "sm:[&>div]:col-start-2" : ""
-                  }`}
-                >
-                  <div className="absolute left-4 sm:left-1/2 w-3 h-3 rounded-full bg-gold -translate-x-1/2 mt-2 shadow-[0_0_20px_rgba(233,196,106,0.6)]" />
-                  <div className="glass rounded-2xl p-6">
-                    <p className="text-xs uppercase tracking-[0.3em] text-gold/80">{t.year}</p>
-                    <h4 className="font-display text-2xl mt-2">{t.title}</h4>
-                    <p className="mt-2 text-muted-foreground">{t.body}</p>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Thank you */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
-          className="mt-24 glass-strong rounded-3xl p-10 sm:p-14 text-center"
-        >
-          <p className="font-display text-2xl sm:text-3xl leading-relaxed text-foreground/95">
-            To every person who answered my questions,<br />covered for me on a bad day,<br />
-            and celebrated the small wins —<br />
-            <span className="text-gradient-gold">thank you.</span>
-          </p>
-          <p className="mt-8 text-muted-foreground">
-            This wasn't just my first job. It was where I learned what good work feels like.
-          </p>
-        </motion.div>
-
-        {/* Contact */}
-        <div className="mt-16 flex flex-col sm:flex-row items-center justify-center gap-4">
-          <a
-            href="https://linkedin.com"
-            target="_blank"
-            rel="noreferrer"
-            className="btn-gold rounded-xl px-6 py-3 font-medium hover:scale-[1.02] active:scale-[0.98]"
-          >
-            Stay in touch on LinkedIn
-          </a>
-          <a
-            href="mailto:hello@example.com"
-            className="glass rounded-xl px-6 py-3 font-medium hover:bg-white/5 transition"
-          >
-            hello@example.com
-          </a>
-        </div>
-
-        <p className="mt-20 text-center text-xs uppercase tracking-[0.3em] text-muted-foreground/60">
-          Made with quiet gratitude · {new Date().getFullYear()}
-        </p>
-      </div>
-    </motion.section>
-  );
-}
