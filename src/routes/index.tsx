@@ -61,10 +61,7 @@ function Farewell() {
             <WelcomeScreen key="welcome" name={name} setName={setName} onSubmit={submit} />
           )}
           {stage === "loading" && <LoadingScreen key="loading" />}
-          {stage === "message" && msg && (
-            <MessageScreen key="message" msg={msg} onContinue={() => setStage("final")} />
-          )}
-          {stage === "final" && <FinalScreen key="final" />}
+          {stage === "message" && msg && <MessageScreen key="message" msg={msg} />}
         </AnimatePresence>
       </main>
     </div>
