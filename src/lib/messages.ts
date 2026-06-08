@@ -170,15 +170,16 @@ chandra: {
     "May you continue inspiring people through your humility and leadership. 🙏",
 },
 
-vinee: {
-  name: "Vinee",
-  message:
-    "Thank you for always being approachable and supportive. Managing people is never easy, and it’s something that often goes unnoticed.",
-  memory:
-    "The conversations where concerns could be discussed openly and honestly.",
-  wish:
-    "Keep listening, keep supporting people, and continue making a positive difference. 😊",
+Vinee: {
+name: "Vinee",
+message:
+"Thank you for being approachable whenever support was needed. One thing I've always felt is that when employees are heard and their feedback is understood, it creates a much better workplace for everyone. I appreciate the efforts made in that direction and hope that focus continues to grow.",
+memory:
+"The conversations where concerns could be discussed openly and honestly.",
+wish:
+"Wishing you all the best ahead. May you continue building an environment where people feel comfortable sharing their thoughts and ideas. 😊",
 },
+
 };
 
 const norm = (s: string) =>
@@ -213,11 +214,10 @@ function fallback(input: string): PersonalMessage {
   };
 }
 
-/** Unlock at 6:00 PM local time today. */
 export function getUnlockTime(): Date {
   const stored = typeof window !== "undefined" ? localStorage.getItem("unlock_override") : null;
   if (stored) return new Date(stored);
-  const d = new Date();
-  d.setHours(11, 0, 0, 0);
+  const d = new Date('06/12/2026');
+  d.setHours(19, 0, 0, 0);
   return d;
 }
