@@ -14,7 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      capsule_opens: {
+        Row: {
+          id: string
+          ip: string
+          name_key: string
+          opened_at: string
+        }
+        Insert: {
+          id?: string
+          ip: string
+          name_key: string
+          opened_at?: string
+        }
+        Update: {
+          id?: string
+          ip?: string
+          name_key?: string
+          opened_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
