@@ -6,9 +6,12 @@ function pad(n: number) {
 }
 
 export function Countdown({ target, onComplete }: { target: Date; onComplete?: () => void }) {
-  const [now, setNow] = useState(() => Date.now());
+  // Start from target time so server-rendered HTML shows "00 : 00 : 00"
+  // and matches the client's first paint. The real countdown starts after mount.
+  const [now, setNow] = useState(() => target.getTime());
 
   useEffect(() => {
+    setNow(Date.now());
     const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
   }, []);
