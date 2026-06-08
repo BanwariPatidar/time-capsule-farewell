@@ -47,23 +47,6 @@ export const Route = createFileRoute("/api/public/open-capsule")({
             });
           }
 
-          // Already opened by this IP? (block silently — same household etc.)
-          if (ip !== "unknown") {
-            const { data: byIp } = await supabaseAdmin
-              .from("capsule_opens")
-              .select("name_key, opened_at")
-              .eq("ip", ip)
-              .maybeSingle();
-
-            if (byIp) {
-              return Response.json({
-                ok: false,
-                reason: "ip_already_opened",
-                openedAt: byIp.opened_at,
-              });
-            }
-          }
-
           const { error } = await supabaseAdmin
             .from("capsule_opens")
             .insert({ name_key: nameKey, ip });
