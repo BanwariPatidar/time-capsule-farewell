@@ -246,8 +246,11 @@ function WelcomeScreen({
         <h1 className="font-display text-5xl sm:text-7xl text-gradient-gold mb-4">
           A small memory<br />awaits you.
         </h1>
-        <p className="text-muted-foreground mb-10">
+        <p className="text-muted-foreground mb-3">
           Pick your name from the list — each message can only be opened once.
+        </p>
+        <p className="text-sm text-gold/90 mb-10 font-medium">
+          Please open your name only 🙏 — don't open someone else's message.
         </p>
 
         <form
