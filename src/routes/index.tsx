@@ -5,13 +5,18 @@ import confetti from "canvas-confetti";
 import { Particles } from "@/components/Particles";
 import { Countdown } from "@/components/Countdown";
 import { Typewriter } from "@/components/Typewriter";
-import { findMessage, getUnlockTime, type PersonalMessage } from "@/lib/messages";
+import {
+  allNames,
+  findMessage,
+  getUnlockTime,
+  type PersonalMessage,
+} from "@/lib/messages";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "A Farewell, At The Right Time" },
-      { name: "description", content: "A small digital time capsule — open it at 6:00 PM." },
+      { name: "description", content: "A small digital time capsule — opens on 12 June 2026, 7:00 PM." },
       { property: "og:title", content: "A Farewell, At The Right Time" },
       { property: "og:description", content: "Some memories are meant to be opened at the right time." },
     ],
@@ -19,7 +24,7 @@ export const Route = createFileRoute("/")({
   component: Farewell,
 });
 
-type Stage = "locked" | "welcome" | "loading" | "message";
+type Stage = "locked" | "welcome" | "loading" | "message" | "already";
 
 function Farewell() {
   const unlockAt = useMemo(() => getUnlockTime(), []);
@@ -35,16 +40,39 @@ function Farewell() {
     return () => clearInterval(id);
   }, [stage, unlockAt]);
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return;
     setStage("loading");
-    setTimeout(() => {
-      const m = findMessage(name);
-      setMsg(m);
-      setStage("message");
-      burstConfetti();
-    }, 1800);
+
+    // Tiny artificial delay so the loader feels meaningful
+    const start = Date.now();
+    let result: { ok: boolean; reason?: string } = { ok: false };
+    try {
+      const res = await fetch("/api/public/open-capsule", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name }),
+      });
+      result = await res.json();
+    } catch {
+      result = { ok: false, reason: "network" };
+    }
+    const elapsed = Date.now() - start;
+    if (elapsed < 1600) await new Promise((r) => setTimeout(r, 1600 - elapsed));
+
+    if (!result.ok) {
+      if (result.reason === "already_opened" || result.reason === "ip_already_opened") {
+        setStage("already");
+        return;
+      }
+      // For server/network errors, still let them read (graceful fallback)
+    }
+
+    const m = findMessage(name);
+    setMsg(m);
+    setStage("message");
+    burstConfetti();
   };
 
   return (
@@ -62,6 +90,7 @@ function Farewell() {
           )}
           {stage === "loading" && <LoadingScreen key="loading" />}
           {stage === "message" && msg && <MessageScreen key="message" msg={msg} />}
+          {stage === "already" && <AlreadyScreen key="already" />}
         </AnimatePresence>
       </main>
     </div>
@@ -154,9 +183,53 @@ function WelcomeScreen({
   onSubmit: (e: React.FormEvent) => void;
 }) {
   const ref = useRef<HTMLInputElement>(null);
+  const [focused, setFocused] = useState(false);
+  const [highlight, setHighlight] = useState(0);
+
   useEffect(() => {
     ref.current?.focus();
   }, []);
+
+  const suggestions = useMemo(() => {
+    const q = name.trim().toLowerCase();
+    if (!q) return allNames.slice(0, 8);
+    return allNames.filter((n) => n.toLowerCase().includes(q)).slice(0, 8);
+  }, [name]);
+
+  useEffect(() => {
+    setHighlight(0);
+  }, [name]);
+
+  const showList = focused && suggestions.length > 0;
+
+  const pick = (n: string) => {
+    setName(n);
+    setFocused(false);
+    // Defer so state updates before submit-button focus
+    setTimeout(() => ref.current?.blur(), 0);
+  };
+
+  const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!showList) return;
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setHighlight((h) => Math.min(h + 1, suggestions.length - 1));
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setHighlight((h) => Math.max(h - 1, 0));
+    } else if (e.key === "Enter" && suggestions[highlight]) {
+      // If the typed value isn't already an exact match, complete it
+      const exact = suggestions.find(
+        (s) => s.toLowerCase() === name.trim().toLowerCase(),
+      );
+      if (!exact) {
+        e.preventDefault();
+        pick(suggestions[highlight]);
+      }
+    } else if (e.key === "Escape") {
+      setFocused(false);
+    }
+  };
 
   return (
     <ScreenShell>
@@ -174,17 +247,57 @@ function WelcomeScreen({
           A small memory<br />awaits you.
         </h1>
         <p className="text-muted-foreground mb-10">
-          Enter your name to unlock something written just for you.
+          Pick your name from the list — each message can only be opened once.
         </p>
 
-        <form onSubmit={onSubmit} className="glass-strong rounded-2xl p-2 sm:p-3 flex flex-col sm:flex-row gap-2">
-          <input
-            ref={ref}
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Enter your name"
-            className="flex-1 bg-transparent px-5 py-4 text-lg text-foreground placeholder:text-muted-foreground focus:outline-none"
-          />
+        <form
+          onSubmit={onSubmit}
+          className="glass-strong rounded-2xl p-2 sm:p-3 flex flex-col sm:flex-row gap-2 relative"
+        >
+          <div className="relative flex-1">
+            <input
+              ref={ref}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              onFocus={() => setFocused(true)}
+              onBlur={() => setTimeout(() => setFocused(false), 150)}
+              onKeyDown={onKeyDown}
+              placeholder="Start typing your name…"
+              autoComplete="off"
+              className="w-full bg-transparent px-5 py-4 text-lg text-foreground placeholder:text-muted-foreground focus:outline-none"
+            />
+
+            <AnimatePresence>
+              {showList && (
+                <motion.ul
+                  initial={{ opacity: 0, y: -6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  transition={{ duration: 0.18 }}
+                  className="absolute left-0 right-0 top-full mt-2 z-50 glass-strong rounded-xl overflow-hidden max-h-72 overflow-y-auto text-left shadow-2xl"
+                >
+                  {suggestions.map((n, i) => (
+                    <li key={n}>
+                      <button
+                        type="button"
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => pick(n)}
+                        onMouseEnter={() => setHighlight(i)}
+                        className={`w-full text-left px-5 py-3 transition-colors ${
+                          i === highlight
+                            ? "bg-gold/15 text-foreground"
+                            : "text-foreground/85 hover:bg-gold/10"
+                        }`}
+                      >
+                        {n}
+                      </button>
+                    </li>
+                  ))}
+                </motion.ul>
+              )}
+            </AnimatePresence>
+          </div>
+
           <button
             type="submit"
             disabled={!name.trim()}
@@ -195,7 +308,7 @@ function WelcomeScreen({
         </form>
 
         <p className="mt-6 text-xs text-muted-foreground/70">
-          Names are matched gently — capitalization and spaces don't matter.
+          Choose the exact name so you don't lose your one-time chance to read it.
         </p>
       </div>
     </ScreenShell>
@@ -271,6 +384,34 @@ function MessageScreen({ msg }: { msg: PersonalMessage }) {
   );
 }
 
+function AlreadyScreen() {
+  return (
+    <ScreenShell>
+      <div className="max-w-xl w-full text-center">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.96 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.8 }}
+          className="glass-strong rounded-3xl p-10 sm:p-14"
+        >
+          <p className="text-xs uppercase tracking-[0.3em] text-gold/80 mb-6">
+            The capsule has already been opened
+          </p>
+          <h1 className="font-display text-4xl sm:text-5xl text-gradient-gold mb-6">
+            Some words are<br />meant to be read once.
+          </h1>
+          <p className="text-foreground/80 leading-relaxed">
+            This message has already been read. I hope whoever opened it carried it with them.
+          </p>
+          <p className="mt-8 font-display italic text-foreground/70">
+            Thank you for being part of the journey. ✦
+          </p>
+        </motion.div>
+      </div>
+    </ScreenShell>
+  );
+}
+
 function Block({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <motion.div
@@ -284,4 +425,3 @@ function Block({ label, children }: { label: string; children: React.ReactNode }
     </motion.div>
   );
 }
-
