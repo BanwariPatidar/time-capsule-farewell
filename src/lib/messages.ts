@@ -182,6 +182,12 @@ wish:
 
 };
 
+// Display names for the autocomplete (preserves "Sir" / "Ma'am" etc.)
+export const allNames: string[] = Object.values(messages)
+  .map((m) => m.name)
+  .sort((a, b) => a.localeCompare(b));
+
+
 const norm = (s: string) =>
   s
     .toLowerCase()
