@@ -224,6 +224,6 @@ export function getUnlockTime(): Date {
   const stored = typeof window !== "undefined" ? localStorage.getItem("unlock_override") : null;
   if (stored) return new Date(stored);
   const d = new Date('06/12/2026');
-  d.setHours(19, 0, 0, 0);
+  d.setHours(18, 0, 0, 0);
   return d;
 }
