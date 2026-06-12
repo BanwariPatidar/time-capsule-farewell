@@ -105,8 +105,8 @@ memory:
 "The consistency and professionalism you brought to every task.",
 thanks:
 "Thank you for always ensuring that quality remains a priority.",
-wish:
-"Just one small request: as a project manager, try not to panic when things go wrong. Projects will always have challenges, but when the person leading the team stays calm, the developers naturally feel calmer and more confident too. Your composure can set the tone for the entire team. 🙌",
+  wish:
+    "A calm leader builds the strongest teams. Your steady presence made every challenge feel manageable. 🙌",
 },
 
 
